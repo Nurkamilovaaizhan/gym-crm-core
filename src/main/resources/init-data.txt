@@ -1,0 +1,4 @@
+TRAINEE|1|Gym|Goer|1995-05-15|Bishkek, Chuy 42|true
+TRAINER|1|Max|Verstappen|Racing Coach|true
+TRAINER|2|John|Smith|Fitness Coach|true
+TRAINING|1|1|1|Morning Cardio|Cardio|2026-06-23|60
