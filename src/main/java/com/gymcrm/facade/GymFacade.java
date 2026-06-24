@@ -19,7 +19,6 @@ public class GymFacade {
     private final TrainerService trainerService;
     private final TrainingService trainingService;
 
-    // Constructor-based injection строго по ТЗ
     public GymFacade(TraineeService traineeService, TrainerService trainerService, TrainingService trainingService) {
         this.traineeService = traineeService;
         this.trainerService = trainerService;
@@ -27,7 +26,6 @@ public class GymFacade {
         log.info("GymFacade initialized successfully using constructor injection.");
     }
 
-    // Делегирование методов для Trainee
     public Trainee createTrainee(Trainee trainee) {
         return traineeService.createTrainee(trainee);
     }
@@ -44,7 +42,6 @@ public class GymFacade {
         return traineeService.getTrainee(id);
     }
 
-    // Делегирование методов для Trainer
     public Trainer createTrainer(Trainer trainer) {
         return trainerService.createTrainer(trainer);
     }
@@ -57,7 +54,6 @@ public class GymFacade {
         return trainerService.getTrainer(id);
     }
 
-    // Делегирование методов для Training
     public Training createTraining(Training training) {
         return trainingService.createTraining(training);
     }

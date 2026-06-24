@@ -13,7 +13,6 @@ public class TraineeDao {
 
     private Map<Long, Trainee> storage;
 
-    // Сеттер-инжекшн (The rest of the injections should be done in a setter-based way)
     @Autowired
     @Qualifier("traineeStorage")
     public void setStorage(Map<Long, Trainee> storage) {

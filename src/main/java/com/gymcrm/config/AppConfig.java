@@ -10,8 +10,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 @ComponentScan(basePackages = "com.gymcrm")
 @PropertySource("classpath:application.properties")
 public class AppConfig {
-
-    // Этот бин заставит Spring Core понимать аннотации @Value("${...}")
+    
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
         return new PropertySourcesPlaceholderConfigurer();

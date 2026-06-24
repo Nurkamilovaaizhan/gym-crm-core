@@ -17,7 +17,7 @@ public class TraineeService {
     private TraineeDao traineeDao;
     private TrainerDao trainerDao;
 
-    // Setter-based injection строго по ТЗ
+    // Setter-based injection
     @Autowired
     public void setTraineeDao(TraineeDao traineeDao) {
         this.traineeDao = traineeDao;
