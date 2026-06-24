@@ -19,7 +19,6 @@ import java.util.Map;
 @Component
 public class StorageInitializerPostProcessor implements BeanPostProcessor {
 
-    // Спринг подставит значение из application.properties
     @Value("${storage.init.data.path}")
     private String dataPath;
 
@@ -27,12 +26,12 @@ public class StorageInitializerPostProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        return bean; // Ничего не меняем ДО инициализации
+        return bean;
     }
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        // Перехватываем конфигурацию хранилищ ПОСЛЕ создания бина
+        // Wait for StorageConfig bean to be ready, then load initial data
         if (bean instanceof StorageConfig storageConfig) {
             log.info("BeanPostProcessor triggered: Starting data initialization from file: {}", dataPath);
             loadData(storageConfig.traineeStorage(), storageConfig.trainerStorage(), storageConfig.trainingStorage());
@@ -64,8 +63,6 @@ public class StorageInitializerPostProcessor implements BeanPostProcessor {
                             t.setDateOfBirth(dateFormat.parse(parts[4]));
                             t.setAddress(parts[5]);
                             t.setActive(Boolean.parseBoolean(parts[6]));
-
-                            // Базовые креды для дефолтных данных из файла
                             t.setUsername(t.getFirstName() + "." + t.getLastName());
                             t.setPassword("initPass123");
 

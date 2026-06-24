@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Configuration
 public class StorageConfig {
 
-    // Потокобезопасные карты для хранения наших данных в памяти
     @Bean
     public Map<Long, Trainee> traineeStorage() {
         return new ConcurrentHashMap<>();

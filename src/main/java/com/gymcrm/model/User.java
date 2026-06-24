@@ -11,7 +11,7 @@ public abstract class User {
     private String firstName;
     private String lastName;
     private String username;
-    @ToString.Exclude // Исключаем пароль из логов ради безопасности
+    @ToString.Exclude // password must not appear in logs
     private String password;
     private boolean isActive;
 }

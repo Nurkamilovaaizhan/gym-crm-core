@@ -40,7 +40,6 @@ class TraineeServiceTest {
 
     @Test
     void testCreateTrainee_ShouldGenerateCredentials() {
-        // Симулируем пустые хранилища, чтобы не было дубликатов
         when(traineeDao.getStorageMap()).thenReturn(new HashMap<>());
         when(trainerDao.getStorageMap()).thenReturn(new HashMap<>());
         when(traineeDao.save(any(Trainee.class))).thenReturn(trainee);
