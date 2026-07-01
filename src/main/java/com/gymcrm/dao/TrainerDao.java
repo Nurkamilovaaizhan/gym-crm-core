@@ -1,38 +1,33 @@
 package com.gymcrm.dao;
 
 import com.gymcrm.model.Trainer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
-import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class TrainerDao {
+public class TrainerDao extends AbstractHibernateDao<Trainer, Long> {
 
-    private Map<Long, Trainer> storage;
-
-    @Autowired
-    @Qualifier("trainerStorage")
-    public void setStorage(Map<Long, Trainer> storage) {
-        this.storage = storage;
+    public TrainerDao() {
+        super(Trainer.class);
     }
 
-    public Trainer save(Trainer trainer) {
-        storage.put(trainer.getId(), trainer);
-        return trainer;
+    public Optional<Trainer> findByUsername(String username) {
+        return sessionFactory.getCurrentSession()
+                .createQuery("select t from Trainer t where t.user.username = :username", Trainer.class)
+                .setParameter("username", username)
+                .uniqueResultOptional();
     }
 
-    public Optional<Trainer> findById(Long id) {
-        return Optional.ofNullable(storage.get(id));
-    }
-
-    public Collection<Trainer> getAll() {
-        return storage.values();
-    }
-
-    public Map<Long, Trainer> getStorageMap() {
-        return storage;
+    public List<Trainer> findUnassignedTrainersForTrainee(String traineeUsername) {
+        return sessionFactory.getCurrentSession()
+                .createQuery("""
+                select tr from Trainer tr
+                where tr not in (
+                    select t2 from Trainee te join te.trainers t2
+                    where te.user.username = :username
+                )""", Trainer.class)
+                .setParameter("username", traineeUsername)
+                .list();
     }
 }

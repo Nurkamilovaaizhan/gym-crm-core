@@ -1,34 +1,34 @@
 package com.gymcrm.dao;
 
 import com.gymcrm.model.Training;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 
 @Repository
-public class TrainingDao {
+public class TrainingDao extends AbstractHibernateDao<Training, Long> {
 
-    private Map<Long, Training> storage;
-
-    @Autowired
-    @Qualifier("trainingStorage")
-    public void setStorage(Map<Long, Training> storage) {
-        this.storage = storage;
+    public TrainingDao() {
+        super(Training.class);
     }
 
-    public Training save(Training training) {
-        storage.put(training.getId(), training);
-        return training;
-    }
+    public List<Training> findByTraineeCriteria(String traineeUsername, Date from, Date to,
+                                                String trainerName, String trainingType) {
+        StringBuilder hql = new StringBuilder(
+                "select t from Training t where t.trainee.user.username = :username");
+        if (from != null) hql.append(" and t.trainingDate >= :from");
+        if (to != null) hql.append(" and t.trainingDate <= :to");
+        if (trainerName != null) hql.append(" and t.trainer.user.lastName like :trainerName");
+        if (trainingType != null) hql.append(" and t.trainingType.trainingTypeName = :trainingType");
 
-    public Optional<Training> findById(Long id) {
-        return Optional.ofNullable(storage.get(id));
-    }
+        var query = sessionFactory.getCurrentSession()
+                .createQuery(hql.toString(), Training.class)
+                .setParameter("username", traineeUsername);
+        if (from != null) query.setParameter("from", from);
+        if (to != null) query.setParameter("to", to);
+        if (trainerName != null) query.setParameter("trainerName", "%" + trainerName + "%");
+        if (trainingType != null) query.setParameter("trainingType", trainingType);
 
-    public Collection<Training> getAll() {
-        return storage.values();
+        return query.list();
     }
 }

@@ -1,17 +1,33 @@
 package com.gymcrm.model;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+@Entity
+@Table(name = "users")
 @Getter
 @Setter
 @ToString
-public abstract class User {
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String firstName;
+
+    @Column(nullable = false)
     private String lastName;
+
+    @Column(nullable = false, unique = true)
     private String username;
-    @ToString.Exclude // password must not appear in logs
+
+    @Column(nullable = false)
+    @ToString.Exclude
     private String password;
+
+    @Column(nullable = false)
     private boolean isActive;
 }
