@@ -8,7 +8,6 @@ import com.gymcrm.model.Trainer;
 import com.gymcrm.utils.UserUtils;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -17,10 +16,20 @@ import java.util.Optional;
 @Service
 public class TrainerService {
 
-    @Autowired private TrainerDao trainerDao;
-    @Autowired private TraineeDao traineeDao;
-    @Autowired private UserDao userDao;
-    @Autowired private AuthenticationService authenticationService;
+    private final TrainerDao trainerDao;
+    private final TraineeDao traineeDao;
+    private final UserDao userDao;
+    private final AuthenticationService authenticationService;
+
+    public TrainerService(TrainerDao trainerDao,
+                          TraineeDao traineeDao,
+                          UserDao userDao,
+                          AuthenticationService authenticationService) {
+        this.trainerDao = trainerDao;
+        this.traineeDao = traineeDao;
+        this.userDao = userDao;
+        this.authenticationService = authenticationService;
+    }
 
     @Transactional
     public Trainer createTrainer(Trainer trainer) {

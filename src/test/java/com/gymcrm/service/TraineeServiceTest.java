@@ -21,19 +21,24 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TraineeServiceTest {
 
-    @Mock private TraineeDao traineeDao;
-    @Mock private UserDao userDao;
-    @Mock private AuthenticationService authenticationService;
+    @Mock
+    private TraineeDao traineeDao;
 
-    @InjectMocks private TraineeService traineeService;
+    @Mock
+    private UserDao userDao;
+
+    @Mock
+    private AuthenticationService authenticationService;
+
+    @InjectMocks
+    private TraineeService traineeService;
 
     private Trainee trainee;
     private User concreteUser;
 
     @BeforeEach
     void setUp() {
-        // Убрали {} — теперь User создается как обычный объект
-        concreteUser = new User();
+        concreteUser = new User() { };
         concreteUser.setFirstName("Alan");
         concreteUser.setLastName("Walker");
 

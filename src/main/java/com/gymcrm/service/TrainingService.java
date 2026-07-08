@@ -5,7 +5,6 @@ import com.gymcrm.exception.ValidationException;
 import com.gymcrm.model.Training;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -16,8 +15,14 @@ import java.util.Optional;
 @Service
 public class TrainingService {
 
-    @Autowired private TrainingDao trainingDao;
-    @Autowired private AuthenticationService authenticationService;
+    private final TrainingDao trainingDao;
+    private final AuthenticationService authenticationService;
+
+    public TrainingService(TrainingDao trainingDao,
+                           AuthenticationService authenticationService) {
+        this.trainingDao = trainingDao;
+        this.authenticationService = authenticationService;
+    }
 
     @Transactional
     public Training addTraining(String authUsername, String authPassword, Training training) {
@@ -54,5 +59,11 @@ public class TrainingService {
         if (training.getTrainingDuration() <= 0) {
             throw new ValidationException("Training duration must be greater than zero");
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Training> getTrainerTrainings(String username, String password, Date from, Date to, String traineeName) {
+        authenticationService.authenticate(username, password);
+        return trainingDao.findByTrainerCriteria(username, from, to, traineeName);
     }
 }

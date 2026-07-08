@@ -4,15 +4,17 @@ import com.gymcrm.dao.UserDao;
 import com.gymcrm.exception.AuthenticationException;
 import com.gymcrm.model.User;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 public class AuthenticationService {
 
-    @Autowired
-    private UserDao userDao;
+    private final UserDao userDao;
+
+    public AuthenticationService(UserDao userDao) {
+        this.userDao = userDao;
+    }
 
     public void authenticate(String username, String password) {
         User user = userDao.findByUsername(username)

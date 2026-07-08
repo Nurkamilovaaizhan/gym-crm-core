@@ -20,15 +20,21 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TrainerServiceTest {
 
-    @Mock private TrainerDao trainerDao;
-    @Mock private UserDao userDao;
-    @Mock private AuthenticationService authenticationService;
+    @Mock
+    private TrainerDao trainerDao;
 
-    @InjectMocks private TrainerService trainerService;
+    @Mock
+    private UserDao userDao;
+
+    @Mock
+    private AuthenticationService authenticationService;
+
+    @InjectMocks
+    private TrainerService trainerService;
 
     @Test
     void testCreateTrainer_ShouldGenerateCredentials() {
-        User abstractUserMock = new User();
+        User abstractUserMock = new User() { };
         abstractUserMock.setFirstName("Max");
         abstractUserMock.setLastName("Verstappen");
 

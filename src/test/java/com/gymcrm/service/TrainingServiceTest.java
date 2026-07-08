@@ -21,12 +21,20 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TrainingServiceTest {
 
-    @Mock private TrainingDao trainingDao;
-    @Mock private TraineeDao traineeDao;
-    @Mock private TrainerDao trainerDao;
-    @Mock private AuthenticationService authenticationService;
+    @Mock
+    private TrainingDao trainingDao;
 
-    @InjectMocks private TrainingService trainingService;
+    @Mock
+    private TraineeDao traineeDao;
+
+    @Mock
+    private TrainerDao trainerDao;
+
+    @Mock
+    private AuthenticationService authenticationService;
+
+    @InjectMocks
+    private TrainingService trainingService;
 
     @Test
     void testAddTraining_ShouldSaveAndEstablishRelations() {
