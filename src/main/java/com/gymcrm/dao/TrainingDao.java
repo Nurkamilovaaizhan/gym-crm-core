@@ -1,34 +1,49 @@
 package com.gymcrm.dao;
 
 import com.gymcrm.model.Training;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
+import java.util.Date;
+import java.util.List;
 
 @Repository
-public class TrainingDao {
+public class TrainingDao extends AbstractHibernateDao<Training, Long> {
 
-    private Map<Long, Training> storage;
-
-    @Autowired
-    @Qualifier("trainingStorage")
-    public void setStorage(Map<Long, Training> storage) {
-        this.storage = storage;
+    public TrainingDao(SessionFactory sessionFactory) {
+        super(sessionFactory, Training.class);
     }
 
-    public Training save(Training training) {
-        storage.put(training.getId(), training);
-        return training;
+    public List<Training> findByTraineeCriteria(String traineeUsername, Date from, Date to, String trainerName, String trainingType) {
+        StringBuilder hql = new StringBuilder("select t from Training t where t.trainee.user.username = :username");
+        if (from != null) hql.append(" and t.trainingDate >= :from");
+        if (to != null) hql.append(" and t.trainingDate <= :to");
+        if (trainerName != null && !trainerName.isBlank()) hql.append(" and t.trainer.user.lastName like :trainerName");
+        if (trainingType != null && !trainingType.isBlank()) hql.append(" and t.trainingType.trainingTypeName = :trainingType");
+
+        var query = currentSession()
+                .createQuery(hql.toString(), Training.class)
+                .setParameter("username", traineeUsername);
+        if (from != null) query.setParameter("from", from);
+        if (to != null) query.setParameter("to", to);
+        if (trainerName != null && !trainerName.isBlank()) query.setParameter("trainerName", "%" + trainerName + "%");
+        if (trainingType != null && !trainingType.isBlank()) query.setParameter("trainingType", trainingType);
+
+        return query.list();
     }
 
-    public Optional<Training> findById(Long id) {
-        return Optional.ofNullable(storage.get(id));
-    }
+    public List<Training> findByTrainerCriteria(String trainerUsername, Date from, Date to, String traineeName) {
+        StringBuilder hql = new StringBuilder("select t from Training t where t.trainer.user.username = :username");
+        if (from != null) hql.append(" and t.trainingDate >= :from");
+        if (to != null) hql.append(" and t.trainingDate <= :to");
+        if (traineeName != null && !traineeName.isBlank()) hql.append(" and t.trainee.user.lastName like :traineeName");
 
-    public Collection<Training> getAll() {
-        return storage.values();
+        var query = currentSession()
+                .createQuery(hql.toString(), Training.class)
+                .setParameter("username", trainerUsername);
+        if (from != null) query.setParameter("from", from);
+        if (to != null) query.setParameter("to", to);
+        if (traineeName != null && !traineeName.isBlank()) query.setParameter("traineeName", "%" + traineeName + "%");
+
+        return query.list();
     }
 }

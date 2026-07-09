@@ -1,8 +1,9 @@
 package com.gymcrm.service;
 
 import com.gymcrm.dao.TraineeDao;
-import com.gymcrm.dao.TrainerDao;
+import com.gymcrm.dao.UserDao;
 import com.gymcrm.model.Trainee;
+import com.gymcrm.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,8 +11,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -23,53 +25,66 @@ class TraineeServiceTest {
     private TraineeDao traineeDao;
 
     @Mock
-    private TrainerDao trainerDao;
+    private UserDao userDao;
+
+    @Mock
+    private AuthenticationService authenticationService;
 
     @InjectMocks
     private TraineeService traineeService;
 
     private Trainee trainee;
+    private User concreteUser;
 
     @BeforeEach
     void setUp() {
+        concreteUser = new User() { };
+        concreteUser.setFirstName("Alan");
+        concreteUser.setLastName("Walker");
+
         trainee = new Trainee();
         trainee.setId(1L);
-        trainee.setFirstName("Alan");
-        trainee.setLastName("Walker");
+        trainee.setUser(concreteUser);
     }
 
     @Test
     void testCreateTrainee_ShouldGenerateCredentials() {
-        // Симулируем пустые хранилища, чтобы не было дубликатов
-        when(traineeDao.getStorageMap()).thenReturn(new HashMap<>());
-        when(trainerDao.getStorageMap()).thenReturn(new HashMap<>());
+        Set<String> existingUsernames = new HashSet<>();
+        when(userDao.findAllUsernames()).thenReturn(existingUsernames);
         when(traineeDao.save(any(Trainee.class))).thenReturn(trainee);
 
         Trainee created = traineeService.createTrainee(trainee);
 
         assertNotNull(created);
-        assertEquals("Alan.Walker", created.getUsername());
-        assertNotNull(created.getPassword());
-        assertEquals(10, created.getPassword().length());
+        assertEquals("Alan.Walker", created.getUser().getUsername());
+        assertNotNull(created.getUser().getPassword());
         verify(traineeDao, times(1)).save(trainee);
     }
 
     @Test
-    void testGetTrainee_ShouldReturnTrainee() {
-        when(traineeDao.findById(1L)).thenReturn(Optional.of(trainee));
+    void testGetTraineeByUsername_ShouldAuthenticateAndReturnTrainee() {
+        String username = "alan.walker";
+        String password = "password123";
 
-        Optional<Trainee> found = traineeService.getTrainee(1L);
+        doNothing().when(authenticationService).authenticate(username, password);
+        when(traineeDao.findByUsername(username)).thenReturn(Optional.of(trainee));
+
+        Optional<Trainee> found = traineeService.getTraineeByUsername(username, password);
 
         assertTrue(found.isPresent());
-        assertEquals("Alan", found.get().getFirstName());
+        verify(traineeDao, times(1)).findByUsername(username);
     }
 
     @Test
-    void testDeleteTrainee_ShouldInvokeDelete() {
-        doNothing().when(traineeDao).deleteById(1L);
+    void testDeleteTraineeByUsername_ShouldAuthenticateAndDelete() {
+        String username = "alan.walker";
+        String password = "password123";
 
-        traineeService.deleteTrainee(1L);
+        doNothing().when(authenticationService).authenticate(username, password);
+        doNothing().when(traineeDao).deleteByUsername(username);
 
-        verify(traineeDao, times(1)).deleteById(1L);
+        traineeService.deleteTraineeByUsername(username, password);
+
+        verify(traineeDao, times(1)).deleteByUsername(username);
     }
 }

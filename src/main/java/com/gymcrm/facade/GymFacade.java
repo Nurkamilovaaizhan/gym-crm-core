@@ -9,6 +9,8 @@ import com.gymcrm.service.TrainingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -19,7 +21,6 @@ public class GymFacade {
     private final TrainerService trainerService;
     private final TrainingService trainingService;
 
-    // Constructor-based injection строго по ТЗ
     public GymFacade(TraineeService traineeService, TrainerService trainerService, TrainingService trainingService) {
         this.traineeService = traineeService;
         this.trainerService = trainerService;
@@ -27,42 +28,40 @@ public class GymFacade {
         log.info("GymFacade initialized successfully using constructor injection.");
     }
 
-    // Делегирование методов для Trainee
     public Trainee createTrainee(Trainee trainee) {
         return traineeService.createTrainee(trainee);
     }
 
-    public Trainee updateTrainee(Trainee trainee) {
-        return traineeService.updateTrainee(trainee);
-    }
-
-    public void deleteTrainee(Long id) {
-        traineeService.deleteTrainee(id);
-    }
-
-    public Optional<Trainee> getTrainee(Long id) {
-        return traineeService.getTrainee(id);
-    }
-
-    // Делегирование методов для Trainer
     public Trainer createTrainer(Trainer trainer) {
         return trainerService.createTrainer(trainer);
     }
 
-    public Trainer updateTrainer(Trainer trainer) {
-        return trainerService.updateTrainer(trainer);
+    public Optional<Trainee> getTrainee(String username, String password) {
+        return traineeService.getTraineeByUsername(username, password);
     }
 
-    public Optional<Trainer> getTrainer(Long id) {
-        return trainerService.getTrainer(id);
+    public Optional<Trainer> getTrainer(String username, String password) {
+        return trainerService.getTrainerByUsername(username, password);
     }
 
-    // Делегирование методов для Training
-    public Training createTraining(Training training) {
-        return trainingService.createTraining(training);
+    public Trainee updateTrainee(String username, String password, Trainee trainee) {
+        return traineeService.updateTrainee(username, password, trainee);
     }
 
-    public Optional<Training> getTraining(Long id) {
-        return trainingService.getTraining(id);
+    public Trainer updateTrainer(String username, String password, Trainer trainer) {
+        return trainerService.updateTrainer(username, password, trainer);
+    }
+
+    public void deleteTrainee(String username, String password) {
+        traineeService.deleteTraineeByUsername(username, password);
+    }
+
+    public Training createTraining(String authUsername, String authPassword, Training training) {
+        return trainingService.addTraining(authUsername, authPassword, training);
+    }
+
+    public List<Training> getTraineeTrainings(String username, String password, Date from, Date to,
+                                              String trainerName, String trainingType) {
+        return trainingService.getTraineeTrainings(username, password, from, to, trainerName, trainingType);
     }
 }
