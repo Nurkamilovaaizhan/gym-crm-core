@@ -5,6 +5,7 @@ import com.gymcrm.exception.AuthenticationException;
 import com.gymcrm.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -16,6 +17,7 @@ public class AuthenticationService {
         this.userDao = userDao;
     }
 
+    @Transactional(readOnly = true)
     public void authenticate(String username, String password) {
         User user = userDao.findByUsername(username)
                 .orElseThrow(() -> {

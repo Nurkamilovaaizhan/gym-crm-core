@@ -4,29 +4,26 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.ArrayList;
 
 @Entity
 @Table(name = "trainee")
 @Getter
 @Setter
 @ToString(exclude = {"trainings", "trainers"})
-public class Trainee {
+@PrimaryKeyJoinColumn(name = "id")
+public class Trainee extends User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-
-    private Long id;
+    @Temporal(TemporalType.DATE)
+    @Column(name = "date_of_birth")
     private Date dateOfBirth;
-    private String address;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;
+    private String address;
 
     @OneToMany(mappedBy = "trainee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Training> trainings = new ArrayList<>();
