@@ -11,4 +11,5 @@ public interface TraineeDao {
     void delete(Trainee entity);
     Optional<Trainee> findByUsername(String username);
     void deleteByUsername(String username);
+
 }

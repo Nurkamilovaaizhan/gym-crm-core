@@ -6,9 +6,9 @@ import com.gymcrm.dao.UserDao;
 import com.gymcrm.exception.ValidationException;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.utils.UserUtils;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -34,9 +34,9 @@ public class TrainerService {
     @Transactional
     public Trainer createTrainer(Trainer trainer) {
         validateForCreate(trainer);
-        UserUtils.setupCredentials(trainer.getUser(), userDao.findAllUsernames());
+        UserUtils.setupCredentials(trainer, userDao.findAllUsernames());
         Trainer saved = trainerDao.save(trainer);
-        log.info("Created trainer profile, username={}", saved.getUser().getUsername());
+        log.info("Created trainer profile, username={}", saved.getUsername());
         return saved;
     }
 
@@ -50,8 +50,16 @@ public class TrainerService {
     public Trainer updateTrainer(String username, String password, Trainer updated) {
         authenticationService.authenticate(username, password);
         validateForUpdate(updated);
+
+        Trainer existing = trainerDao.findById(updated.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Trainer not found"));
+
+        existing.setFirstName(updated.getFirstName());
+        existing.setLastName(updated.getLastName());
+        existing.setActive(updated.isActive());
+
         log.info("Updating trainer profile, username={}", username);
-        return trainerDao.update(updated);
+        return trainerDao.update(existing);
     }
 
     @Transactional
@@ -59,7 +67,7 @@ public class TrainerService {
         authenticationService.authenticate(username, oldPassword);
         Trainer trainer = trainerDao.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Trainer not found"));
-        trainer.getUser().setPassword(newPassword);
+        trainer.setPassword(newPassword);
         trainerDao.update(trainer);
         log.info("Password changed for trainer username={}", username);
     }
@@ -69,15 +77,19 @@ public class TrainerService {
         authenticationService.authenticate(username, password);
         Trainer trainer = trainerDao.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Trainer not found"));
-        trainer.getUser().setActive(active);
+
+        if (trainer.isActive() == active) {
+            throw new ValidationException("Trainer already has this active state");
+        }
+
+        trainer.setActive(active);
         trainerDao.update(trainer);
         log.info("Trainer {} isActive set to {}", username, active);
     }
 
     private void validateForCreate(Trainer trainer) {
-        if (trainer.getUser() == null
-                || trainer.getUser().getFirstName() == null || trainer.getUser().getFirstName().isBlank()
-                || trainer.getUser().getLastName() == null || trainer.getUser().getLastName().isBlank()) {
+        if (trainer.getFirstName() == null || trainer.getFirstName().isBlank()
+                || trainer.getLastName() == null || trainer.getLastName().isBlank()) {
             throw new ValidationException("First name and last name are required");
         }
         if (trainer.getSpecialization() == null) {

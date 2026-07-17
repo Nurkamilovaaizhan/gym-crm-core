@@ -7,9 +7,9 @@ import com.gymcrm.exception.ValidationException;
 import com.gymcrm.model.Trainee;
 import com.gymcrm.model.Trainer;
 import com.gymcrm.utils.UserUtils;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,9 +37,9 @@ public class TraineeService {
     @Transactional
     public Trainee createTrainee(Trainee trainee) {
         validateForCreate(trainee);
-        UserUtils.setupCredentials(trainee.getUser(), userDao.findAllUsernames());
+        UserUtils.setupCredentials(trainee, userDao.findAllUsernames());
         Trainee saved = traineeDao.save(trainee);
-        log.info("Created trainee profile, username={}", saved.getUser().getUsername());
+        log.info("Created trainee profile, username={}", saved.getUsername());
         return saved;
     }
 
@@ -57,13 +57,11 @@ public class TraineeService {
         Trainee existing = traineeDao.findById(updated.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Trainee not found"));
 
+        existing.setFirstName(updated.getFirstName());
+        existing.setLastName(updated.getLastName());
         existing.setDateOfBirth(updated.getDateOfBirth());
         existing.setAddress(updated.getAddress());
-
-        if (updated.getUser() != null) {
-            existing.getUser().setFirstName(updated.getUser().getFirstName());
-            existing.getUser().setLastName(updated.getUser().getLastName());
-        }
+        existing.setActive(updated.isActive());
 
         log.info("Updating trainee profile, username={}", username);
         return traineeDao.update(existing);
@@ -74,7 +72,7 @@ public class TraineeService {
         authenticationService.authenticate(username, oldPassword);
         Trainee trainee = traineeDao.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Trainee not found"));
-        trainee.getUser().setPassword(newPassword);
+        trainee.setPassword(newPassword);
         traineeDao.update(trainee);
         log.info("Password changed for trainee username={}", username);
     }
@@ -84,10 +82,12 @@ public class TraineeService {
         authenticationService.authenticate(username, password);
         Trainee trainee = traineeDao.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Trainee not found"));
-        if (trainee.getUser().isActive() == active) {
-            log.warn("Trainee {} already has isActive={}", username, active);
+
+        if (trainee.isActive() == active) {
+            throw new ValidationException("Trainee already has this active state");
         }
-        trainee.getUser().setActive(active);
+
+        trainee.setActive(active);
         traineeDao.update(trainee);
         log.info("Trainee {} isActive set to {}", username, active);
     }
@@ -96,7 +96,7 @@ public class TraineeService {
     public void deleteTraineeByUsername(String username, String password) {
         authenticationService.authenticate(username, password);
         traineeDao.deleteByUsername(username);
-        log.info("Deleted trainee (and cascaded trainings) username={}", username);
+        log.info("Deleted trainee username={}", username);
     }
 
     @Transactional(readOnly = true)
@@ -106,20 +106,23 @@ public class TraineeService {
     }
 
     @Transactional
-    public Set<Trainer> updateTraineeTrainers(String username, String password, Set<Trainer> newTrainers) {
+    public Set<Trainer> updateTraineeTrainers(String username, String password, Set<String> trainerUsernames) {
         authenticationService.authenticate(username, password);
+
         Trainee trainee = traineeDao.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Trainee not found"));
+
+        Set<Trainer> newTrainers = trainerDao.findByUsernames(trainerUsernames);
         trainee.setTrainers(newTrainers);
+
         traineeDao.update(trainee);
         log.info("Updated trainers list for trainee username={}", username);
         return trainee.getTrainers();
     }
 
     private void validateForCreate(Trainee trainee) {
-        if (trainee.getUser() == null
-                || trainee.getUser().getFirstName() == null || trainee.getUser().getFirstName().isBlank()
-                || trainee.getUser().getLastName() == null || trainee.getUser().getLastName().isBlank()) {
+        if (trainee.getFirstName() == null || trainee.getFirstName().isBlank()
+                || trainee.getLastName() == null || trainee.getLastName().isBlank()) {
             throw new ValidationException("First name and last name are required");
         }
     }
